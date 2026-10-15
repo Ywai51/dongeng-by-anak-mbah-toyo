@@ -360,6 +360,8 @@ def main():
     ap.add_argument("--scene-to", type=int, dest="scene_to")
     ap.add_argument("--clips-only", action="store_true",
                     help="render scene jadi klip saja, tanpa join/BGM (untuk split)")
+    ap.add_argument("--skip-existing", action="store_true",
+                    help="lewati scene yang klipnya sudah ada (mode resume)")
     ap.add_argument("--join-only", action="store_true")
     ap.add_argument("--no-bgm", action="store_true")
     a = ap.parse_args()
@@ -385,6 +387,10 @@ def main():
     clips = []
     if not a.join_only:
         for s in scenes:
+            cp = os.path.join(dirs["clips"], f"scene_{s['n']:02d}.mp4")
+            if a.skip_existing and os.path.exists(cp):
+                clips.append({"n": s["n"], "file": cp, "dur": probe_dur(cp)})
+                continue
             r = build_scene(s, cfg, dirs)
             if r:
                 clips.append(r)
